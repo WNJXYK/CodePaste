@@ -1,0 +1,190 @@
+//WNJXYK
+//while(true) RP++;
+#include<iostream>
+#include<cstdio>
+#include<algorithm>
+#include<map>
+#include<set>
+#include<queue>
+#include<string>
+#include<cstring>
+using namespace std;
+
+const int Maxn=100010;
+const unsigned int M=51061;
+
+struct Btree{
+	int ch[2];
+	int fa;
+	unsigned int val,sum;
+	unsigned int tTag,pTag;
+	unsigned int siz;
+	bool rev;
+};
+Btree tree[Maxn];
+
+
+inline void solve(int x,unsigned int t,unsigned int p){
+	if (!x) return;
+	tree[x].sum=(tree[x].sum*t%M+tree[x].siz*p%M)%M;
+	tree[x].val=(tree[x].val*t%M+p)%M;
+	tree[x].tTag=(tree[x].tTag*t)%M;
+	tree[x].pTag=(tree[x].pTag*t%M+p)%M;
+}
+
+
+inline void update(int x){
+	int l=tree[x].ch[0],r=tree[x].ch[1];
+	
+	tree[x].siz=tree[l].siz+1+tree[r].siz;
+	tree[x].sum=(tree[l].sum+tree[x].val+tree[r].sum)%M;
+}
+
+
+
+inline void clean(int x){
+	int l=tree[x].ch[0],r=tree[x].ch[1];
+	
+	if (tree[x].rev){
+		tree[x].rev^=1;
+		tree[l].rev^=1;
+		tree[r].rev^=1;
+		swap(tree[x].ch[0],tree[x].ch[1]);
+	}
+	
+	unsigned int tTag=tree[x].tTag,pTag=tree[x].pTag;
+	tree[x].tTag=1;
+	tree[x].pTag=0;
+	if(tTag!=1 || pTag!=0){
+		solve(l,tTag,pTag);
+		solve(r,tTag,pTag);
+	}
+	
+}
+
+inline bool isRoot(int x){
+	return tree[tree[x].fa].ch[0]!=x && tree[tree[x].fa].ch[1]!=x;
+}
+
+inline void rotate(int x){
+	int y=tree[x].fa,z=tree[y].fa;
+	int l=(tree[y].ch[1]==x),r=l^1;
+	if (!isRoot(y))
+		tree[z].ch[ (tree[z].ch[1]==y) ]=x;
+	tree[x].fa=z;
+	tree[y].fa=x;
+	tree[tree[x].ch[r]].fa=y;
+	tree[y].ch[l]=tree[x].ch[r];
+	tree[x].ch[r]=y;
+	update(y);
+	update(x);
+}
+
+
+int top,stack[Maxn];
+inline void splay(int x){
+	top=0;
+	stack[++top]=x;
+	for (int i=x;!isRoot(i);i=tree[i].fa)
+		stack[++top]=tree[i].fa;
+	for (int i=top;i;i--)
+		clean(stack[i]);
+	
+	while(!isRoot(x)){
+		int y=tree[x].fa,z=tree[y].fa;
+		if (!isRoot(y)){
+			if (tree[z].ch[1]==y^tree[y].ch[1]==x){
+				rotate(x);
+			}else{
+				rotate(y);
+			}	
+		}
+		rotate(x);
+	}
+	update(x);
+}
+
+void access(int x){
+	int t=0;
+	while(x){
+		splay(x);
+		tree[x].ch[1]=t;
+		t=x;
+		x=tree[x].fa;
+	}
+}
+
+void makeRoot(int x){
+	access(x);
+	splay(x);
+	tree[x].rev^=1;
+}
+
+void link(int x,int y){
+	makeRoot(x);
+	tree[x].fa=y;
+}
+
+void cut(int x,int y){
+	makeRoot(x);
+	access(y);
+	splay(y);
+	tree[y].ch[0]=0;
+	tree[x].fa=0;
+}
+
+void split(int u,int v){
+	makeRoot(v);
+	access(u);
+	splay(u);
+}
+
+int n,q;
+char f[10];
+int a,b,c,d;	
+
+int main(){
+	//freopen(".in","r",stdin);
+	//freopen(".out","w",stdout);
+		
+	scanf("%d%d",&n,&q);
+	
+	//tree[0].siz=tree[0].val=tree[0].sum=0;
+	for (int i=1;i<=n;i++){
+		tree[i].siz=1;
+		tree[i].val=1;
+		tree[i].sum=1;
+		tree[i].tTag=1;
+		
+		//val[i]=sum[i]=mt[i]=size[i]=1;
+	}
+	
+	for (int i=1;i<n;i++){
+		int x,y;
+		scanf("%d%d",&x,&y);
+		link(x,y);
+	}
+	
+	for (int i=1;i<=q;i++){
+		scanf("%s",f);
+		if (f[0]=='+'){
+			scanf("%d%d%d",&a,&b,&c);
+			split(a,b);
+			solve(a,1,c);			
+		}else if(f[0]=='-'){
+			scanf("%d%d%d%d",&a,&b,&c,&d);
+			cut(a,b);
+			link(c,d);
+		}else if(f[0]=='*'){
+			scanf("%d%d%d",&a,&b,&c);
+			split(a,b);
+			solve(a,c,0);
+		}else{
+			scanf("%d%d",&a,&b);
+			split(a,b);
+			printf("%u\n",tree[a].sum%M);
+		}
+	}
+	
+	return 0;
+}

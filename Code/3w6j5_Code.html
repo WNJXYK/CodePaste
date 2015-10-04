@@ -1,0 +1,85 @@
+#include<iostream>
+#include<algorithm>
+#include<cstring>
+#include<cstdio>
+using namespace std;
+const int maxn=300000+10;
+int lx[maxn*4],rx[maxn*4],mx[maxn*4],sum[maxn*4],n,a[maxn];
+struct node
+{
+  int v,p;
+}h[maxn];
+int cmp(node a,node b)
+{
+  return a.v>b.v;
+}
+void pushup(int p,int l,int r)
+{
+  int mid=(l+r)>>1;
+  sum[p]=sum[p*2]+sum[p*2+1];
+  lx[p]=lx[p*2];if(sum[p*2]==(mid-l+1)) lx[p]=sum[p*2]+lx[p*2+1];
+  rx[p]=rx[p*2+1];if(sum[p*2+1]==(r-mid)) rx[p]=sum[p*2+1]+rx[p*2];
+  mx[p]=max(mx[p*2],max(mx[p*2+1],rx[p*2]+lx[p*2+1]));
+}
+void add(int p,int l,int r,int x,int v)
+{
+  if(l>x||r<x) return;
+  if(l==r)
+  {
+    lx[p]=rx[p]=mx[p]=sum[p]=v;
+	return;
+  }
+  int mid=(l+r)>>1;
+  add(p*2,l,mid,x,v);
+  add(p*2+1,mid+1,r,x,v);
+  pushup(p,l,r);
+}
+void build(int p,int l,int r)
+{
+  int mid=(l+r)>>1;
+  if(l==r)
+  {
+    lx[p]=rx[p]=mx[p]=sum[p]=0;
+	return;
+  }
+  build(p*2,l,mid);
+  build(p*2+1,mid+1,r);
+  pushup(p,l,r);
+}
+int main()
+{
+  //freopen("b.in","r",stdin);
+  //freopen("b.out","w",stdout);
+  scanf("%d",&n);
+  for(int i=1;i<=n;i++)
+  {
+    scanf("%d",&a[i]);
+	h[i].v=a[i];h[i].p=i;
+  }
+  build(1,1,n);
+  sort(h+1,h+n+1,cmp);
+  int ans=1,j=1;
+  for(int i=1;i<=n;i++)
+  {
+    int flag=0;
+	while(!flag)
+	{
+	  while(h[j].v>=h[ans].v&&j<=n) 
+	  {
+	    add(1,1,n,h[j].p,1);
+	    j++;
+	  }
+	  if(mx[1]>=i)
+	  {
+	    flag=1;
+		break;
+	  }
+	  ans++;
+	  //cout<<ans<<' '<<mx[1]<<endl;
+    }
+	if(i<n) printf("%d ",h[ans].v);
+    else printf("%d\n",h[ans].v);
+  }
+  return 0;
+}
+  

@@ -1,0 +1,70 @@
+//WNJXYK
+//while(true) RP++;
+#include<iostream>
+#include<cstdio>
+#include<algorithm>
+#include<map>
+#include<set>
+#include<queue>
+#include<string>
+#include<cstring>
+using namespace std;
+
+const int Maxn=2e5+5;
+
+int n,k;
+
+int num[Maxn];
+
+int ood,eve;
+
+int rt;
+
+int main(){
+	//freopen(".in","r",stdin);
+	//freopen(".out","w",stdout);
+	scanf("%d%d",&n,&k);
+	for (int i=1;i<=n;i++){
+		scanf("%d",&num[i]);
+		if (num[i]&1) num[i]=1; else num[i]=2;
+		if (num[i]&1) ood++; else eve++;
+	}
+	rt=n-k;
+	if (rt&1){
+		if (ood>rt/2 && eve>rt/2){
+			printf("Stannis\n");
+			return 0;
+		}
+		if (ood<=rt/2){
+			printf("Daenerys\n");
+			return 0;
+		}
+		if (eve<=rt/2){
+			if (k&1) 
+				printf("Stannis\n");
+			else
+				printf("Daenerys\n");
+			return 0;
+		}
+		
+	}else{
+		//Daenerys C
+		if (ood>rt/2 && eve>rt/2){
+			printf("Daenerys\n");
+			return 0;
+		}
+		if (ood<=rt/2){
+			printf("Daenerys\n");
+			return 0;
+		}
+		if (eve<=rt/2){
+			if (k&1) 
+				printf("Stannis\n");
+			else
+				printf("Daenerys\n");
+			return 0;
+		}
+	}
+	
+	return 0;
+}

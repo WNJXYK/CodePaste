@@ -1,0 +1,129 @@
+#include<cstdio>
+#include<cstdlib>
+#include<cstring>
+#include<queue>
+using namespace std;
+const int MAXN = 10000000;
+struct node
+{
+    int count;
+    int id;
+    int deepth;
+    node *next[26];
+    node *fail;
+};
+node *q[MAXN];
+char keyword[55];
+char str[1000010];
+int head,tail;
+int position[100001];
+node *root;
+void insert(char *word,node *root,int id)
+{
+    int index,len;
+    node *p = root,*newnode;
+    len = strlen(word);
+    for(int i=0 ; i < len ; i++ )
+    {
+        index=word[i]-'a';
+        if(!p->next[index])
+        {
+            newnode=(struct node *)malloc(sizeof(struct node));
+            for(int j=0; j<26; j++) newnode->next[j]=0;
+            newnode->id=0;
+            newnode->count=0;
+            newnode->fail=0;
+            newnode->deepth=p->deepth+1;
+            p->next[index]=newnode;
+        }
+        p=p->next[index];
+    }
+    p->count++;
+    p->id=id;
+}
+void build_ac_automation(node *root)
+{
+    head=0;
+    tail=1;
+    q[head]=root;
+    node *temp,*p;
+    while(head<tail)
+    {
+        temp=q[head++];
+        for(int i=0; i< 26 ; i ++)
+        {
+            if(temp->next[i])
+            {
+                if(temp==root)temp->next[i]->fail=root;
+                else
+                {
+                    p=temp->fail;
+                    while(p)
+                    {
+                        if(p->next[i])
+                        {
+                            temp->next[i]->fail=p->next[i];
+                            break;
+                        }
+                        p=p->fail;
+                    }
+                    if(!p)temp->next[i]->fail=root;
+                }
+                q[tail++]=temp->next[i];
+            }
+        }
+    }
+}
+int query(node *root)
+{
+    int i,cnt=0,index,len=strlen(str);
+    node *p=root;
+    for(i=0; i < len ; i ++)
+    {
+        index=str[i]-'a';
+        while( !p->next[index] && p != root)p=p->fail;
+        p=p->next[index];
+        if(!p)p=root;
+        node *temp=p;
+        while(temp != root )
+        {
+            if(temp->count>=0)
+            {
+                cnt+=temp->count;
+                position[temp->id]=i+1-temp->deepth;
+                temp->count=-1;
+            }
+            else break;
+            temp=temp->fail;
+        }
+    }
+    return cnt;
+}
+int main()
+{
+    int i,t,n,ans;
+    scanf("%d",&t);
+    while(t--)
+    {
+        memset(position,-1,sizeof(position));
+        root=(struct node *)malloc(sizeof(struct node));
+        for(int j=0; j<26; j++) root->next[j]=0;
+        root->fail=0;
+        root->count=0;
+        scanf("%d",&n);
+        getchar();
+        for(i=0; i<n; i++)
+        {
+            gets(keyword);
+            insert(keyword,root,i+1);
+        }
+        build_ac_automation(root);
+        gets(str);
+        ans=query(root);
+        printf("%d\n",ans);
+        //for(int i=1; i<=n; i++)printf("position:%d\n",position[i]);打出匹配位置 
+    }
+    fclose(stdin);
+    fclose(stdout);
+    return 0;
+}

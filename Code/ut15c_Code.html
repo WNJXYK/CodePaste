@@ -1,0 +1,53 @@
+#include<cstdio>
+#include<string>
+#include<iostream>
+using namespace std;
+
+const int Maxn=100010;
+
+string pattern;
+
+int next[Maxn];
+
+inline void getNext(){
+	for (int i=1;i<pattern.length();i++){
+		int j=i;
+		while(j>0){
+			j=next[j];
+			if (pattern[i]==pattern[j]){
+				next[i+1]=j+1;
+				break;
+			}
+		}
+	}
+}
+
+inline void KMP(string str){
+	int j=0;
+	for (int i=0,j=0;i<str.length();i++){
+		if (pattern[j]==str[i] && j<pattern.length()){
+			j++;
+		}else{
+			while(j>0){
+				j=next[j];
+				if (str[i]==pattern[j]){
+					j++;
+					break; 
+				}
+			}
+		}
+		if (j==pattern.length()){
+			printf("%d\n",i-pattern.length()+1);
+		}
+	}
+}
+
+int main(){
+	cin>>pattern;
+	while(true){
+		string str;
+		cin>>str;
+		KMP(str);
+	}
+	return 0;
+} 

@@ -1,0 +1,33 @@
+#include<cstdio>  
+#include<iostream>  
+#include<cstring>  
+#include<string>  
+#include<algorithm>  
+#include<queue>  
+#include<set>  
+#include<map>  
+using namespace std;  
+  
+#define LL long long  
+#define Inf 2147483647  
+#define InfL 10000000000LL  
+
+LL phi[Maxn+10];  
+LL minDiv[Maxn+10];  
+LL sum[Maxn+10];  
+inline void getPhi(){  
+    for (int i=1;i<=Maxn;i++) minDiv[i]=i;  
+    for (int i=2;i<=i*i;i++)  
+        if (minDiv[i]=i)  
+            for (int j=i*i;j<=Maxn;j+=i)  
+                minDiv[j]=i;  
+    phi[1]=1;  
+    for (int i=2;i<=Maxn;i++){  
+        phi[i]=phi[i/minDiv[i]];  
+        if ((i/minDiv[i])%minDiv[i]==0){  
+            phi[i]*=minDiv[i];  
+        }else{  
+            phi[i]*=minDiv[i]-1;  
+        }  
+    }  
+}  

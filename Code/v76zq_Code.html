@@ -1,0 +1,82 @@
+//WNJXYK
+//while(true) RP++;
+#include<iostream>
+#include<cstdio>
+#include<algorithm>
+#include<set>
+#include<queue>
+#include<string>
+#include<cstring>
+using namespace std;
+
+const int Maxn=505;
+
+int map[Maxn][Maxn];
+int n,m;
+int g;
+
+struct Point{
+	int x,y;
+	Point(){}
+	Point(int x0,int y0){
+		x=x0;
+		y=y0;
+	}
+};
+queue<Point> que;
+int Ans;
+
+int dx[]={0,1,0,-1};
+int dy[]={1,0,-1,0};
+
+inline void solve(){
+	scanf("%d%d",&n,&m);
+	scanf("%d",&g);
+	
+	memset(map,0,sizeof(map));
+	while(!que.empty()) que.pop();
+	Ans=0;
+	
+	for (int i=1;i<=g;i++){
+		int x,y;
+		scanf("%d%d",&x,&y);
+		if (map[x][y]==0)Ans++;
+		map[x][y]=1;
+		que.push(Point(x,y));
+	}
+	
+	while(!que.empty()){
+		int x=que.front().x,y=que.front().y;
+		que.pop();
+		for (int k=0;k<4;k++){
+			int gx=x+dx[k],gy=y+dy[k];
+			if (1<=gx && gx<=n && 1<=gy && gy<=m && map[gx][gy]==0){
+				int ret1=0,ret2=0;
+				for (int k=0;k<4;k+=2){
+					int tx=gx+dx[k],ty=gy+dy[k];
+					if (1<=tx && tx<=n && 1<=ty && ty<=m && map[tx][ty]==1) ret1++;
+				}
+				for (int k=1;k<4;k+=2){
+					int tx=gx+dx[k],ty=gy+dy[k];
+					if (1<=tx && tx<=n && 1<=ty && ty<=m && map[tx][ty]==1) ret2++;
+				}
+				if (ret1!=0 && ret2!=0){
+					map[gx][gy]=1;
+					Ans++;
+					que.push(Point(gx,gy));
+				}
+			}
+		}
+	}
+	printf("%d\n",Ans);
+}
+
+int T;
+int main(){
+	scanf("%d",&T);
+	for (int i=1;i<=T;i++){
+		printf("Case #%d:\n",i);
+		solve();
+	}
+	return 0;
+}

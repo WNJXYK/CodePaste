@@ -1,0 +1,41 @@
+//WNJXYK
+//while(true) RP++;
+#include<iostream>
+#include<cstdio>
+#include<algorithm>
+#include<map>
+#include<set>
+#include<queue>
+#include<string>
+#include<cstring>
+using namespace std;
+
+string str;
+
+bool AB,BA,BAB,ABA;
+
+bool dfs2(int now,int cho){
+	string che=(cho==1?"AB":"BA");
+	for (int i=now;i<str.length()-1;i++){
+		if (str[i]==che[0] && str[i+1]==che[1]) return true;
+	}
+	return false;
+}
+
+bool dfs(int now,int cho){
+	string che=(cho==1?"AB":"BA");
+	for (int i=now;i<str.length()-1;i++){
+		if (str[i]==che[0] && str[i+1]==che[1])
+			if (dfs2(i+2,cho^1)) return true;
+	}
+	return false;
+}
+
+int main(){
+	cin>>str;
+	if (dfs(0,0) || dfs(0,1))
+		printf("YES\n");
+	else
+		printf("NO\n");
+	return 0;
+}

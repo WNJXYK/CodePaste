@@ -1,0 +1,171 @@
+#include<stdio.h>
+#include<string.h>
+#define INF (1<<30)
+#define RIGHT (segt[cur].r)
+#define LEFT (segt[cur].l)
+#define SUM (segt[cur].sum)
+#define MAX (segt[cur].max)
+#define MIN (segt[cur].min)
+#define RCHILD ((cur<<1)+1)
+#define LCHILD (cur<<1)
+#define TAG (segt[cur].tag)
+#define TAG2 (segt[cur].tag2)
+typedef struct
+{
+    int l, r;
+    int sum, max, min;
+    int tag, tag2;
+} node;
+node segt[10000];
+int n, m, q;
+int max(int a, int b)
+{
+    return a > b ? a : b;
+}
+int min(int a, int b)
+{
+    return a < b ? a : b;
+}
+void update(int cur)//更新线段树节点
+{
+    SUM = segt[LCHILD].sum + segt[RCHILD].sum;
+    MAX = max(segt[LCHILD].max, segt[RCHILD].max);
+    MIN = min(segt[LCHILD].min, segt[RCHILD].min);
+}
+void pushdown(int cur)//下推标记
+{
+    if(TAG)
+    {
+        segt[LCHILD].max += TAG;
+        segt[LCHILD].min += TAG;
+        segt[LCHILD].sum += TAG * (segt[LCHILD].r - segt[LCHILD].l + 1);
+        segt[LCHILD].tag += TAG;
+        segt[RCHILD].max += TAG;
+        segt[RCHILD].min += TAG;
+        segt[RCHILD].sum += TAG * (segt[RCHILD].r - segt[RCHILD].l + 1);
+        segt[RCHILD].tag += TAG;
+        TAG = 0;
+    }
+}
+void pushdown2(int cur)//下推标记
+{
+    if(TAG2)
+    {
+        segt[LCHILD].max = TAG2;
+        segt[LCHILD].min = TAG2;
+        segt[LCHILD].sum = TAG2 * (segt[LCHILD].r - segt[LCHILD].l + 1);
+        segt[LCHILD].tag2 = TAG2;
+        segt[RCHILD].max = TAG2;
+        segt[RCHILD].min = TAG2;
+        segt[RCHILD].sum = TAG2 * (segt[RCHILD].r - segt[RCHILD].l + 1);
+        segt[RCHILD].tag2 = TAG2;
+        TAG2 = 0;
+    }
+}
+void build(int cur, int l, int r) //建树
+{
+    LEFT = l;
+    RIGHT = r;
+    if(l >= r)return;
+    build(LCHILD, l, (l + r) >> 1);
+    build(RCHILD, ((l + r) >> 1) + 1, r);
+}
+void add(int cur, int l, int r, int val) //区间加值
+{
+    int mid = (LEFT + RIGHT) >> 1;
+    if(LEFT >= l && RIGHT <= r)
+    {
+        TAG += val;
+        SUM += val * (RIGHT - LEFT + 1);
+        MIN += val;
+        MAX += val;
+        return;
+    }
+    pushdown(cur);
+    if(l <= mid)add(LCHILD, l, r, val);
+    if(r > mid)add(RCHILD, l, r, val);
+    update(cur);
+}
+void set(int cur, int l, int r, int val) //区间设值
+{
+    int mid = (LEFT + RIGHT) >> 1;
+    if(LEFT >= l && RIGHT <= r)
+    {
+        TAG2 = val;
+        SUM = val * (RIGHT - LEFT + 1);
+        MIN = val;
+        MAX = val;
+        return;
+    }
+    pushdown2(cur);
+    if(l <= mid)set(LCHILD, l, r, val);
+    if(r > mid)set(RCHILD, l, r, val);
+    update(cur);
+}
+
+void modify(int cur, int x, int val) //单点修改
+{
+    int mid = (LEFT + RIGHT) >> 1;
+    if(LEFT == x && RIGHT == x)
+    {
+        SUM = MAX = MIN = val;
+        return;
+    }
+    if(x <= mid)modify(LCHILD, x, val);
+    else if(x > mid)modify(RCHILD, x, val);
+    update(cur);
+}
+int qsum(int cur, int l, int r) //区间和
+{
+    int mid = (LEFT + RIGHT) >> 1, rtn = 0;
+    if(LEFT >= l && RIGHT <= r)
+        return SUM;
+    pushdown2(cur);
+    if(l <= mid)rtn += qsum(LCHILD, l, r);
+    if(r > mid)rtn += qsum(RCHILD, l, r);
+    return rtn;
+}
+int qmax(int cur, int l, int r) //区间最大值
+{
+    int mid = (LEFT + RIGHT) >> 1, rtn = -INF;
+    if(LEFT >= l && RIGHT <= r)
+        return MAX;
+    pushdown2(cur);
+    if(l <= mid)rtn = max(rtn, qmax(LCHILD, l, r));
+    if(r > mid)rtn = max(rtn, qmax(RCHILD, l, r));
+    return rtn;
+}
+int qmin(int cur, int l, int r) //区间最小值
+{
+    int mid = (LEFT + RIGHT) >> 1, rtn = INF;
+    if(LEFT >= l && RIGHT <= r)
+        return MIN;
+    pushdown2(cur);
+    if(l <= mid)rtn = min(rtn, qmin(LCHILD, l, r));
+    if(r > mid)rtn = min(rtn, qmin(RCHILD, l, r));
+    return rtn;
+}
+int main()
+{
+    int i, j, l, r;
+    //freopen("in.txt","r",stdin);
+    //freopen("out.txt","w",stdout);
+    scanf("%d%d%d", &n, &m, &q);
+    build(1, 1, n);
+    for(i = 1; i <= n; i++)
+    {
+        scanf("%d", &j);
+        modify(1, i, j);
+    }
+    while(m--)
+    {
+        scanf("%d%d%d", &l, &r, &i);
+        set(1, l, r, i);
+    }
+    while(q--)
+    {
+        scanf("%d%d", &l, &r);
+        printf("%d %d %d\n", qsum(1, l, r), qmax(1, l, r), qmin(1, l, r));
+    }
+    return 0;
+}

@@ -1,0 +1,55 @@
+/*
+	Name: ztx
+	Copyright: ztx
+	Author: ztx
+	Date: 29/05/15 18:40
+	Description: 分层图？搜索？ SG ？QAQ
+*/
+
+#include <cstdio>
+#include <cstring>
+
+#define  maxn  512LL
+#define  maxm  1024LL
+#define  maxk  5010LL
+
+struct FST { int to,next,len; } e[maxm<<1] ;
+int star[maxn] , tote ;
+inline void FST_init() { memset(star,0,sizeof star) ; tote = 0 ; }
+inline void AddEdge(int u,int v,int w) { e[++tote].to=v;e[tote].len=w;e[tote].next=star[u];star[u]=tote; }
+
+bool vis[maxn][maxk] , win[maxn][maxk] ;
+
+bool Win(int u,int k) {
+	if (vis[u][k]) return win[u][k] ;
+	vis[u][k] = true ;
+	if (!k) return win[u][k] = false ;
+	int p ;
+	for (p = star[u] ; p ; p = e[p].next)
+		if (k>=e[p].len && !Win(e[p].to,k-e[p].len))
+			return win[u][k] = true ;
+	return win[u][k] = false ;
+}
+
+inline void work() {
+int i , n , m , K , u , v , w ;
+	FST_init() ;
+	memset(win,0,sizeof win) ;
+	memset(vis,0,sizeof vis) ;
+	scanf("%d%d%d", &K , &n , &m) ;
+	for (i = 1 ; i <= m ; i ++ ) {
+		scanf("%d%d%d", &u , &v , &w) ;
+		AddEdge(u , v , w) ;
+		AddEdge(v , u , w) ;
+	}
+	if (Win(1,K)) puts("Yes!") ;
+	else puts("No!") ;
+}
+
+int main() {
+int Time ;
+	freopen("fieldlost.in","r",stdin) ;
+	freopen("fieldlost.out","w",stdout) ;
+	for (scanf("%d", &Time);Time-->0;)work() ;
+	return 0 ;
+}

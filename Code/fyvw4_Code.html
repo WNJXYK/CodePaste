@@ -1,0 +1,43 @@
+#include<cstdio>
+#include<cstring>
+#include<algorithm>
+using namespace std;
+ 
+const int Maxn=1000005;
+ 
+struct LeftHeap{
+	int val;
+	int left,right;
+	int dist;
+}; 
+LeftHeap lh[Maxn];
+int nume=0;
+ 
+inline int newLHN(int x){
+	lh[++nume].val=x;
+	lh[nume].dist=lh[nume].left=lh[nume].right=0;
+	return nume;
+}
+ 
+inline int mergeLH(int x,int y){
+	if (!x) return y;
+	if (!y) return x;
+	if (lh[x].val>lh[y].val) swap(x,y);
+	lh[x].right=mergeLH(lh[x].right,y);
+	if (lh[lh[x].left].dist<lh[lh[x].right].dist) swap(lh[x].left,lh[x].right);
+	lh[x].dist=lh[lh[x].right].dist+1;
+	return x;
+}
+ 
+inline int topLH(int x){
+	return lh[x].val;
+}
+ 
+inline int popLH(int x){
+	return mergeLH(lh[x].left,lh[x].right);
+}
+ 
+int main(){
+ 
+	return 0;
+}

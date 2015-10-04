@@ -1,0 +1,111 @@
+#include<cstdio>
+#include<queue>
+#include<cstring>
+#include<algorithm>
+
+using namespace std;
+
+const int Maxm=100010;
+const int Maxn=50010;
+
+struct Edge{
+	int v;
+	int a,b;
+	int nxt;
+	Edge(){}
+	Edge(int v0,int n0,int a0,int b0){
+		v=v0;
+		nxt=n0;
+		a=a0;
+		b=b0;
+	}
+};
+Edge e[Maxm*2];
+int head[Maxn];
+int nume;
+inline void addEdge(int u,int v,int a,int b){
+	e[++nume]=Edge(v,head[u],a,b);
+	head[u]=nume;
+	e[++nume]=Edge(u,head[v],a,b);
+	head[v]=nume;
+}
+
+int n,m;
+
+struct EdgeNode{
+	int x,y,a,b;
+};
+EdgeNode edge[Maxm];
+
+inline bool cmp(EdgeNode a,EdgeNode b){
+	if (a.a!=b.a)return a.a<b.a;
+	if (a.b!=b.b)return a.b<b.b;
+	return true;
+}
+
+int dist[Maxn];
+queue<int> que;
+bool inque[Maxn];
+
+inline int remin(int a,int b){
+	if (a<b) return a;
+	return b;
+}
+
+inline int remax(int a,int b){
+	if (a>b) return a;
+	return b;
+}
+
+void spfa(int a){
+	while(!que.empty()){
+		int now=que.front();
+		que.pop();
+		for (int i=head[now];i;i=e[i].nxt){
+			int v=e[i].v;
+			int ret=remax(e[i].b,dist[now]);
+			if (e[i].a<=a && dist[v]>ret){
+				dist[v]=ret;
+				if (!inque[v]){
+					inque[v]=true;
+					que.push(v);
+				}
+			}
+		}
+		inque[now]=false;
+	}
+}
+
+int main(){
+	freopen("forest1.in","r",stdin);
+	freopen("forest.out","w",stdout);
+	scanf("%d%d",&n,&m);
+	
+	for (int i=1;i<=m;i++)	scanf("%d%d%d%d",&edge[i].x,&edge[i].y,&edge[i].a,&edge[i].b);
+	sort(edge+1,edge+m+1,cmp);
+	
+	memset(dist,127/3,sizeof(dist));
+	memset(inque,false,sizeof(inque));
+	while(!que.empty()) que.pop();
+	
+	dist[1]=0;
+	int Ans=dist[0];
+	
+	for (int i=1;i<=m;i++){
+		addEdge(edge[i].x,edge[i].y,edge[i].a,edge[i].b);
+		que.push(edge[i].x);
+		que.push(edge[i].y);
+		inque[edge[i].x]=true;
+		inque[edge[i].y]=true;
+		spfa(edge[i].a);
+		Ans=remin(Ans,dist[n]+edge[i].a);
+	}
+	
+	if (Ans>=Maxm*2){
+		printf("-1\n");
+	}else{
+		printf("%d\n",Ans);
+	}
+	
+	return 0;
+}

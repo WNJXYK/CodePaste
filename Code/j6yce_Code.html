@@ -1,0 +1,71 @@
+type
+    point=^node;
+    node=record
+               g,w:longint;
+               next,anti:point;
+    end;
+var
+   i,j,k,l,m,n,s,t,flow:longint;
+   a,e:array[0..10000] of point;
+   c,d:array[0..10000] of longint;
+function min(x,y:longint):longint;
+         begin
+              if x<y then min:=x else min:=y;
+         end;
+procedure add(x,y,z:longint);
+          var p:point;
+          begin
+               new(p);p^.g:=y;p^.w:=z;p^.next:=a[x];a[x]:=p;
+               new(p);p^.g:=x;p^.w:=0;p^.next:=a[y];a[y]:=p;
+               a[x]^.anti:=a[y];a[y]^.anti:=a[x];
+          end;
+function spfa:boolean;
+         var p:point;f,r:longint;
+         begin
+              fillchar(c,sizeof(c),255);
+              d[1]:=s;f:=1;r:=2;c[s]:=0;
+              while f<r do
+                    begin
+                         p:=a[d[f]];
+                         while p<>nil do
+                               begin
+                                    if (p^.w<>0) and (c[p^.g]=-1) then
+                                       begin
+                                            c[p^.g]:=c[d[f]]+1;
+                                            e[p^.g]:=p;
+                                            d[r]:=p^.g;inc(r);
+                                       end;
+                                    p:=p^.next;
+                               end;
+                         inc(f);
+                    end;
+              exit(c[t]<>-1);
+         end;
+procedure calc;   //“顺藤摸瓜”模式有效避免了递归带来的爆栈隐患
+          begin
+               i:=t;l:=maxlongint;
+               while i<>s do
+                     begin
+                          l:=min(l,e[i]^.w);
+                          i:=e[i]^.anti^.g;
+                     end;
+               i:=t;inc(flow,l);
+               while i<>s do
+                     begin
+                          if e[i]^.w<>maxlongint then dec(e[i]^.w,l);
+                          if e[i]^.anti^.w<>maxlongint then inc(e[i]^.anti^.w,l);
+                          i:=e[i]^.anti^.g;
+                     end;
+          end;
+begin
+     readln(m,n,s,t);
+     for i:=1 to n do a[i]:=nil;
+     for i:=1 to m do
+         begin
+              readln(j,k,l);
+              add(j,k,l);
+         end;
+     flow:=0;while spfa do calc;
+     writeln(flow);
+     readln;
+end.

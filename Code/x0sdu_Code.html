@@ -1,0 +1,123 @@
+//WNJXYK
+//while(true) RP++;
+#include<iostream>
+#include<cstdio>
+#include<algorithm>
+#include<map>
+#include<set>
+#include<queue>
+#include<string>
+#include<cstring>
+#include<vector>
+#define mp make_pair
+using namespace std;
+
+const double EPS=1e-8;
+
+struct Point{
+	int x,y;
+};
+
+Point p[2010];
+int n;
+
+long long Ans=0;
+long long Ms=0;
+
+int Gcd(int a,int b){
+	if (b==0) return a;
+	return Gcd(b,a%b);
+}
+
+int gcd;
+
+long long tot;
+
+map<pair<pair<int,int>,int>,int> Cf;
+int XX[205];
+
+bool vis[2005];
+
+inline int zabs(int x){
+	if (x<0) return -x;
+	return x;
+}
+
+map<int,int> toAns;
+
+map<pair<int,int>,bool> HashXY;
+
+int main(){
+	//freopen(".in","r",stdin);
+	//freopen(".out","w",stdout);
+	scanf("%d",&n);
+	
+	for (int i=1;i<=n;i++){
+		++tot;
+		scanf("%d%d",&p[tot].x,&p[tot].y);
+		if (HashXY[mp(p[tot].x,p[tot].y)]==false){
+			HashXY[mp(p[tot].x,p[tot].y)]=true;
+		}else{
+			tot--;
+		}
+	}
+	//cout<<tot<<endl;
+	
+	if (tot<=2){
+		cout<<0<<endl;
+		return 0;
+	}
+	
+	Ans=(long long)tot*(long long)(tot-1)*(long long)(tot-2)/(long long)2/(long long)3;
+	
+	for (int i=1;i<=tot;i++){
+		for (int j=1;j<=tot;j++){
+			if (i==j) continue;
+			int deltaY=p[i].y-p[j].y;
+			int deltaX=p[i].x-p[j].x;
+			//cout<<p[i].x<<","<<p[i].y<<" "<<p[j].x<<","<<p[j].y<<"->";
+			if (deltaX!=0){
+				if (deltaY!=0){
+					gcd=Gcd(zabs(deltaX),zabs(deltaY));
+					deltaX/=gcd;deltaY/=gcd;
+					if (deltaX<0){
+						deltaX*=-1;
+						deltaY*=-1;
+					}
+				}else{
+					deltaX=1;
+				}
+				int deltaB=p[i].y*deltaX-p[i].x*deltaY;
+				//cout<<deltaY<<"/"<<deltaX<<"+"<<deltaB;
+				Cf[mp(mp(deltaY,deltaX),deltaB)]++;
+			}else{
+				XX[p[j].x+100]++;
+			}
+			//cout<<endl;
+		}
+	}
+	
+	for (int i=3;i<=2010;i++){
+		toAns[i*(i-1)]=i;
+	}
+	toAns[0]=0;
+	toAns[1]=0;
+	toAns[2]=0;
+	
+	for(map<pair<pair<int,int>,int>,int>::iterator it=Cf.begin();it!=Cf.end();it++){
+		long long tmp=toAns[(*it).second];
+		//if (tmp>=3) cout<<tmp<<endl; 
+		if (tmp>=3) Ms+=(long long)(tmp)*(long long)(tmp-1)*(long long)(tmp-2)/(long long)3/(long long)2;
+	}
+	
+	for (int i=0;i<=201;i++){
+		long long tmp=toAns[XX[i]];
+		// (tmp>=3) cout<<tmp<<endl; 
+		if (tmp>=3) Ms+=(long long)(tmp)*(long long)(tmp-1)*(long long)(tmp-2)/(long long)3/(long long)2;
+	}
+	
+	
+	cout<<Ans-Ms<<endl;
+	
+	return 0;
+}

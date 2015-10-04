@@ -1,0 +1,101 @@
+/**************************************************************
+    Problem: 1715
+    User: wnjxyk
+    Language: C++
+    Result: Accepted
+    Time:76 ms
+    Memory:916 kb
+****************************************************************/
+ 
+/*Author:WNJXYK*/
+#include<cstdio>
+#include<cstring>
+#include<queue>
+using namespace std;
+int T;
+int n,m,w;
+struct Edge{
+    int v;
+    int t;
+    int nxt;
+    Edge(){}
+    Edge(int a,int b,int c){
+        v=a;t=b;nxt=c;
+    }
+};
+Edge e[6000];
+int nume;
+int head[510];
+ 
+inline void addSingleEdge(int x,int y,int w){
+    e[++nume]=Edge(y,w,head[x]);
+    head[x]=nume;
+}
+inline void addEdge(int x,int y,int w){
+    addSingleEdge(x,y,w);
+    addSingleEdge(y,x,w);
+}
+ 
+queue<int> que;
+int dist[510];
+bool inque[510];
+int intime[510];
+ 
+inline void solve(){
+    bool isPrint=false;
+    while(!que.empty()) que.pop();
+    memset(dist,127/3,sizeof(dist));
+    memset(inque,false,sizeof(inque));
+    memset(intime,0,sizeof(intime));
+    que.push(1);
+    dist[1]=0;
+    inque[1]=true;
+    intime[1]++;
+    while(!que.empty()){
+        int now=que.front();
+        que.pop();
+        for (int i=head[now];i;i=e[i].nxt){
+            int v=e[i].v;int w=e[i].t;
+            if (dist[v]>dist[now]+w){
+                intime[v]++;
+                if (intime[v]>n){
+                    printf("YES\n");
+                    isPrint=true;
+                    break;
+                }
+                dist[v]=dist[now]+w;
+                if (!inque[v]){
+                    inque[v]=true;
+                    que.push(v);
+                }
+            }
+        }
+        if (isPrint) break;
+        inque[now]=false;
+    }
+    if (isPrint==false) printf("NO\n");
+}
+inline void read(){
+    scanf("%d%d%d",&n,&m,&w);
+    memset(head,0,sizeof(head));
+    nume=0;
+    for (int i=1;i<=m;i++){
+        int x,y,t;
+        scanf("%d%d%d",&x,&y,&t);
+        addEdge(x,y,t);
+    }
+    for (int i=1;i<=w;i++){
+        int x,y,t;
+        scanf("%d%d%d",&x,&y,&t);
+        addSingleEdge(x,y,-t);
+    }
+}
+ 
+int main(){
+    scanf("%d",&T);
+    for (;T--;){
+        read();
+        solve();
+    }
+    return 0;
+}

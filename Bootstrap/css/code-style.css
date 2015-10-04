@@ -1,0 +1,30 @@
+
+	  .well {
+		padding-left : 38px;
+		padding-right : 38px;
+	  }
+	  h4{
+		line-height:24px;
+	  }
+	  footer {
+		margin-top: 70px;
+		text-align: center;
+		padding: 30px;
+		border-top: 1px solid lightgray;
+		background: whitesmoke;
+		color: gray;
+	  }
+	  footer p {
+        margin-bottom: 0;
+      }
+	  .enter{
+		max-width: 360px;
+	  }
+	  .mw{
+		max-width: 60%;
+		text-align: center;
+	  }
+	  .headeralert{
+		max-width: 400px;
+		overflow:hidden;
+	  }

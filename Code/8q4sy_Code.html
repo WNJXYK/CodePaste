@@ -1,0 +1,88 @@
+#include<cstdio>
+#include<cstring>
+#include<queue>
+using namespace std;
+
+const int Maxm=100000;//最大边数 
+const int Maxn=1000;//最大点数 
+struct Edge{
+	Edge(){};
+	Edge(int a,int b,int c,int d,int e){
+		u=a;
+		v=b; 
+		f=c;
+		w=d;
+		nxt=e;
+	}
+	int u,v,f,w,nxt;//U当前点 V来自点 F最大流量 W费用 NXT下一个点 
+};
+int cnt=1;//边计数
+int inf=2147483647;//无限大 
+int g[Maxn+10];//点的边集的开始序号 
+Edge e[Maxm+10];//边集 
+int dist[Maxn+10];//费用 
+int src,sink;//源点与汇点 
+queue<int> que;//宽搜队列 
+bool inque[Maxn+10];//宽搜判断标志 
+int from[Maxn+10];//来源->用于计算费用 
+int ans=0;//存储最小费用 
+
+inline int remin(int a,int b){
+	return a<b?a:b;
+}
+
+inline void insert(int u,int v,int f,int w){
+	cnt++;
+	e[cnt]=Edge(u,v,f,w,g[u]);
+	g[u]=cnt;//增加一个边 
+} 
+
+inline void addEdge(int u,int v,int f,int w){
+	insert(u,v,f,w);//插入正边 
+	insert(v,u,0,-w);//插入反边 
+}
+
+inline bool spfa(){
+	while (!que.empty()) que.pop();//清空队列 
+	for (int i=0;i<=sink;i++) dist[i]=inf;//清最大值
+	que.push(src);
+	inque[src]=true;
+	dist[src]=0;//加入源点
+	//标准SPFA计算最短路 流量作为通行标准，费用作为路径长度 
+	while(!que.empty()){
+		int now=que.front();
+		que.pop();
+		for (int i=g[now];i;i=e[i].nxt){
+			if (e[i].f!=0 && dist[e[i].v]>dist[now]+e[i].w){
+				dist[e[i].v]=dist[now]+e[i].w;
+				from[e[i].v]=i;
+				if (inque[e[i].v]==false){
+					inque[e[i].v]=true;
+					que.push(e[i].v);
+				}
+			}
+		}
+		inque[now]=false;
+	} 
+	if (dist[sink]==inf) return false;//无法在增广 
+	return true;
+}
+
+inline void calcAns(){
+	int minflow=inf;
+	for (int i=from[sink];i;i=from[e[i].u]) minflow=remin(minflow,e[i].f);//寻找整条路经的流量 
+	for (int i=from[sink];i;i=from[e[i].u]) {
+		e[i].f-=minflow;//正边减流量 
+		e[i^1].f+=minflow;//反边加流量 
+		ans+=e[i].w*minflow;//计算费用 
+	}
+}
+
+inline void minCostFlow(){
+	while(spfa())calcAns();
+}
+
+int main(){
+	minCostFlow();
+	return 0;
+}

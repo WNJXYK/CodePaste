@@ -1,0 +1,128 @@
+#include<iostream>
+#include<stdio.h>
+#include<string.h>
+#include<cmath>
+#include<queue>
+#include<stack>
+#include<set>
+#include<algorithm>
+#define ll long long
+#define oo 1000000007
+#define pi acos(-1.0)
+#define MAXN 205
+using namespace std;   
+struct node
+{
+       int x,y;
+}line[MAXN];
+vector<int> T[MAXN];
+int dfn[MAXN],low[MAXN],DfsIndex,tpnum,tp[MAXN],color[MAXN];
+bool instack[MAXN],arc[MAXN][MAXN],d[MAXN];
+stack<int> mystack;
+bool ok(int a,int b)
+{  
+       if (line[a].y>line[b].x && line[a].y<line[b].y) 
+          if (!(line[a].x>=line[b].x && line[a].x<=line[b].y)) return false;
+       if (line[a].x>line[b].x && line[a].x<line[b].y) 
+          if (!(line[a].y>=line[b].x && line[a].y<=line[b].y)) return false;
+       return true;
+}
+void tarjan(int x)
+{
+       int i,y,m=T[x].size();
+       dfn[x]=low[x]=++DfsIndex;
+       instack[x]=true;
+       mystack.push(x);
+       for (i=0;i<m;i++)
+       {
+              y=T[x][i];
+              if (!dfn[y])
+              {
+                  tarjan(y);
+                  low[x]=min(low[x],low[y]);
+              }else 
+                  if (instack[y]) low[x]=min(low[x],dfn[y]);
+       }
+       if (dfn[x]==low[x])
+       {
+              tpnum++;
+              do
+              {
+                    x=mystack.top();
+                    mystack.pop();
+                    instack[x]=false;
+                    tp[x]=tpnum;
+              }while (dfn[x]!=low[x]);
+       }
+       return;
+}
+bool judge(int m)
+{
+       int i;
+       for (i=0;i<m;i++)
+          if (tp[i<<1]==tp[(i<<1)|1]) return false;
+       return true;
+} 
+void dfs(int x,int m)
+{
+       int i;
+       color[x]=1;
+       for (i=0;i<(m<<1);i++) if (tp[i]==x) color[tp[i^1]]=-1;
+       for (i=0;i<tpnum;i++)
+          if (arc[x][i] && !color[i]) dfs(i,m);
+       return;
+}
+int main()
+{      
+       int i,j,n,m;  
+       while (~scanf("%d%d",&n,&m))
+       {
+               for (i=0;i<m;i++) 
+               {
+                     int x,y,t;
+                     scanf("%d%d",&x,&y);
+                     if (x>y) t=x,x=y,y=t;
+                     line[i].x=x,line[i].y=y;
+               }
+               for (i=0;i<(m<<1);i++) T[i].clear();
+               for (i=0;i<m;i++)
+                  for (j=i+1;j<m;j++)
+                    if (!ok(i,j))
+                    {
+                            T[i<<1].push_back((j<<1)|1);
+                            T[j<<1].push_back((i<<1)|1);
+                            T[(i<<1)|1].push_back(j<<1);
+                            T[(j<<1)|1].push_back(i<<1);
+                    }
+               memset(instack,false,sizeof(instack));
+               memset(dfn,0,sizeof(dfn)); 
+               while (!mystack.empty()) mystack.pop();
+               DfsIndex=tpnum=0;
+               for (i=0;i<(m<<1);i++)
+                  if (!dfn[i]) tarjan(i);   
+               if (!judge(m)) 
+               {
+                       printf("Impossible\n");
+                       continue;
+               }
+               memset(arc,false,sizeof(arc));
+               memset(d,0,sizeof(d));
+               for (i=0;i<(m<<1);i++)
+               {
+                      int x,num=T[i].size();
+                      for (x=0;x<num;x++) 
+                      {
+                            arc[tp[i]][tp[T[i][x]]]=true;
+                            d[tp[T[i][x]]]++;
+                      }
+               }
+               memset(color,0,sizeof(color));
+               for (i=0;i<tpnum;i++)
+                  if (!color[i]) dfs(i,m);               
+               for (i=0;i<m;i++)
+                  if (color[tp[i<<1]]==1) printf("i");
+                    else printf("o");
+               printf("\n");               
+       }
+       return 0;
+}

@@ -1,0 +1,35 @@
+#include<cstdio>
+#include<cstdlib>
+#include<cstring>
+int num[100002]={0},tree[100002]={0};
+int n,l,r;
+int lowbit(int x)
+{
+    return x&(-x);
+}
+int sum(int pos)
+{
+       int sum=0;
+       while(pos>0)
+       {
+         sum+=tree[pos];
+         pos-=lowbit(pos);
+      }
+      return sum;
+}
+void plus(int pos, int num)
+{
+       while(pos<=n)
+    {
+         tree[pos]+=num;
+         pos+=lowbit(pos);
+      }
+}
+int main()
+{
+    scanf("%d",&n);
+    for(int i=1;i<=n;i++)scanf("%d",&num[i]);
+    for(int i=1;i<=n;i++)plus(i,num[i]);
+    printf("%d\n",sum(n));
+    return 0;
+}

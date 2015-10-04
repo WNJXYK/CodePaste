@@ -1,0 +1,232 @@
+//WNJXYK
+//while(true) RP++;
+#include<iostream>
+#include<cstdio>
+#include<algorithm>
+#include<map>
+#include<set>
+#include<queue>
+#include<string>
+#include<cstring>
+using namespace std;
+
+const int Maxn=1024*1024*2+10;
+struct Btree{
+	int fa;
+	int ch[2];
+	int siz;
+	char val;
+	bool rev;
+};
+Btree tree[Maxn];
+int nume;
+int Root;
+queue<int> que;
+
+char tmp[1024*1024*2+5];
+int tmpSiz;
+
+inline void update(int x){
+	if (!x) return;
+	int l=tree[x].ch[0],r=tree[x].ch[1];
+	tree[x].siz=tree[l].siz+1+tree[r].siz;
+}
+
+inline void clean(int x){
+	int l=tree[x].ch[0],r=tree[x].ch[1];
+	if (tree[x].rev){
+		if (l){
+			tree[l].rev^=1;
+			swap(tree[l].ch[0],tree[l].ch[1]);
+		}
+		if (r){
+			tree[r].rev^=1;
+			swap(tree[r].ch[0],tree[r].ch[1]);
+		}
+		tree[x].rev=false;
+	}
+}
+
+
+inline void Rotate(int x,int &k){
+	int y=tree[x].fa,z=tree[y].fa;
+	int l=(tree[y].ch[1]==x),r=l^1;
+	if (k==y){
+		k=x;
+	}else{
+		tree[z].ch[tree[z].ch[1]==y]=x;
+	}
+	tree[tree[x].ch[r]].fa=y;
+	tree[y].fa=x;
+	tree[x].fa=z;
+	tree[y].ch[l]=tree[x].ch[r];
+	tree[x].ch[r]=y;
+	update(y);
+	update(x);
+}
+
+void splay(int x,int &k){
+	while(x!=k){
+		//cout<<x<<endl;
+		int y=tree[x].fa,z=tree[y].fa;
+		if(y!=k){
+			if (tree[y].ch[0]==x ^ tree[z].ch[0]==y)
+				Rotate(x,k);
+			else
+				Rotate(y,k);
+		}
+		Rotate(x,k);
+	}
+}
+
+
+int find(int x,int rank){
+	clean(x);
+	//cout<<x<<" "<<tree[x].siz<<endl;
+	int l=tree[x].ch[0],r=tree[x].ch[1];
+	if (rank==tree[l].siz+1) return x;
+	if (rank<=tree[l].siz) return find(l,rank);
+	return find(r,rank-1-tree[l].siz);	
+}
+
+int split(int k,int tot){
+	//cout<<k<<" "<<k+tot+1<<endl;
+	int x=find(Root,k);
+	int y=find(Root,k+tot+1);
+	splay(x,Root);splay(y,tree[x].ch[1]);
+	return tree[y].ch[0];
+}
+
+int split1(int k,int tot){
+	int x=find(Root,k);
+	int y=find(Root,k+tot+1);
+	splay(x,Root);splay(y,tree[x].ch[1]);
+	return y;
+}
+
+inline void reverse(int k,int tot){
+	int x=split(k,tot);
+	int y=tree[x].fa;
+	tree[x].rev^=1;
+	swap(tree[x].ch[0],tree[x].ch[1]);
+	update(y);
+	update(tree[y].fa);
+}
+
+int build(int left,int right,int fa){
+	if (left>right) return 0;
+	int mid=(left+right)/2;
+	int now=0;
+	if (!que.empty()){
+		now=que.front();
+		que.pop();
+	}else{
+		now=++nume;
+	}
+	tree[now].siz=1;
+	tree[now].val=tmp[mid];
+	tree[now].rev=false;
+	tree[now].fa=fa;
+	if (left==right){
+		tree[now].ch[0]=tree[now].ch[1]=0;
+	}else{
+		tree[now].ch[0]=build(left,mid-1,now);
+		tree[now].ch[1]=build(mid+1,right,now);
+	}
+	update(now);
+	return now;
+}
+
+inline void insert(int k,int siz){
+	int y=split1(k,0);
+	tree[y].ch[0]=build(0,siz-1,y);
+	update(y);
+	update(tree[y].ch[0]);
+	update(tree[y].fa);
+}
+
+inline char get(int k){
+	int x=split(k,1);
+	return tree[x].val;
+}
+
+void rec(int x){
+	if (!x) return;
+	que.push(x);
+	rec(tree[x].ch[0]);rec(tree[x].ch[1]);
+	tree[x].siz=tree[x].fa=tree[x].ch[0]=tree[x].ch[1]=0;
+	tree[x].rev=false;
+}
+
+inline void del(int k,int tot){
+	int x=split(k,tot);
+	int y=tree[x].fa;
+	tree[y].ch[0]=0;
+	rec(x);
+	update(y);
+	update(tree[y].fa);
+}
+
+int N;
+char ord[20];
+int loc;
+
+void print(){
+	cout<<ord<<endl;
+	
+	int pos=2;
+	char x=tree[find(Root,pos)].val;
+	printf("%c",x);
+	while(x!='#'){
+		printf("%c",x);
+		x=tree[find(Root,++pos)].val;
+	}
+	printf("\n");
+}
+
+int main(){
+	scanf("%d",&N);
+	
+	tree[0].siz=tree[0].ch[1]=tree[0].ch[0]=tree[0].fa=0;
+	while(!que.empty()) que.pop();
+	
+	tmp[0]='#';tmp[1]='#';
+	Root=build(0,1,0);
+	loc=1;
+	for (int i=1;i<=N;i++){
+		scanf("%s",ord);
+		//print();
+		if (ord[0]=='M'){
+			scanf("%d",&loc);
+			loc++;
+		}
+		if (ord[0]=='I'){
+			scanf("%d",&tmpSiz);
+			for (int k=0;k<tmpSiz;k++){
+				tmp[k]=getchar();
+				while(!(32<=tmp[k] && tmp[k]<=126))tmp[k]=getchar();
+			}
+			insert(loc,tmpSiz);
+		}
+		if (ord[0]=='D'){
+			scanf("%d",&tmpSiz);
+			del(loc,tmpSiz);
+		}
+		if (ord[0]=='R'){
+			scanf("%d",&tmpSiz);
+			reverse(loc,tmpSiz);
+		}
+		if(ord[0]=='G'){
+			printf("%c\n",tree[find(Root,loc+1)].val);
+		}
+		if (ord[0]=='P'){
+			loc--;
+		}
+		if (ord[0]=='N'){
+			loc++;
+		}
+		//cout<<"POS "<<loc<<endl;
+	}
+	
+	return 0;
+}

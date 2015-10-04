@@ -1,0 +1,108 @@
+#include	<cstdio>
+#include	<cstring>
+#include	<iostream>
+#include	<algorithm>
+
+#define		set( p, k )		memset( p, k, sizeof( p ) )
+
+using	namespace	std;
+const	int N = 4040, M = 202000;
+
+int n, tot, sig, top, cnt, ind, head[N];
+int stack[N], dfn[N], low[N], mark[N], list[N];
+
+inline int in()
+{
+	int k = 0, c = '\0';
+	for( ; c > '9' || c < '0'; )
+		c = getchar();
+	for( ; c >= '0' && c <= '9'; )
+	{
+		k = k * 10 + c - '0';
+		c = getchar();
+	}
+	return k;
+}
+
+struct Edge
+{
+	int v, next;
+} e[M];
+
+inline void AddEdge( int u, int v )
+{
+	e[++sig].v = v, e[sig].next = head[u], head[u] = sig;
+	return ;
+}
+
+void DFS( int u )
+{
+	stack[++top] = u;
+	dfn[u] = low[u] = ++ ind;
+	for( int i = head[u]; i; i = e[i].next )
+	{
+		int v = e[i].v;
+		if( !dfn[v] )
+		{
+			DFS( v );
+			low[u] = min( low[u], low[v] );
+		}
+		else if( !mark[v] )
+			low[u] = min( low[u], dfn[v] );
+	}
+	if( dfn[u] == low[u] )
+	{
+		int v;
+		cnt ++;
+		do
+		{
+			v = stack[top--];
+			mark[v] = cnt;
+		}
+		while( u != v && top );
+	}
+	return ;
+}
+
+int main()
+{
+	while( scanf( "%d", &n ) == 1 )
+	{
+		set( dfn, 0 ), set( head, 0 );
+		set( low, 0 ), set( mark, 0 );
+		ind = cnt = top = sig = 0;
+		for( int i = 1, j, k; i <= n; i ++ )
+		{
+			k = in();
+			while( k -- )
+			{
+				j = in();
+				AddEdge( i, j + n );
+			}
+		}
+		for( int i = 1, j; i <= n; i ++ )
+		{
+			j = in();
+			AddEdge( j + n, i );
+		}
+		for( int i = 1; i <= n + n; i ++ )
+			if( !dfn[i] )
+				DFS( i );
+		for( int u = 1; u <= n; u ++ )
+		{
+			tot = 0;
+			for( int i = head[u]; i; i = e[i].next )
+			{
+				int v = e[i].v;
+				if( mark[u] == mark[v] )
+					list[tot++] = v - n;
+			}
+			sort( list, list + tot );
+			printf( "%d", tot );
+			for( int i = 0; i < tot; i ++ )
+				printf( " %d", list[i] );
+			putchar( '\n' );
+		}
+	}
+	return 0;
+}

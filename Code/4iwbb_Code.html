@@ -1,0 +1,145 @@
+#include<cstdio>
+using namespace std;
+
+const int Maxn=10000;
+struct SBT{
+    int left;
+    int right;
+    int size;
+    int key;
+}; 
+SBT tree[Maxn+10];
+int root,cnt;
+
+inline void rotate_l(int &x){
+    int y=tree[x].right;
+    tree[x].right=tree[y].left;
+    tree[y].left=x;
+    tree[y].size=tree[x].size;
+    tree[x].size=1+tree[tree[x].left].size+tree[tree[x].right].size;
+    x=y;
+}
+
+inline void rotate_r(int &x){
+    int y=tree[x].left;
+    tree[x].left=tree[y].right;
+    tree[y].right=x;
+    tree[y].size=tree[x].size;
+    tree[x].size=tree[tree[x].left].size+1+tree[tree[x].right].size;
+    x=y; 
+}
+
+void maintain(int &x,bool flag){
+    //printf("MainTain %dn",x);
+    if (flag==false){
+        if (tree[tree[tree[x].left].left].size>tree[tree[x].right].size){
+            rotate_r(x);
+        }
+        else if (tree[tree[tree[x].left].right].size>tree[tree[x].right].size){
+            rotate_l(tree[x].left);
+            rotate_r(x);
+        }else return ;
+    }else{
+        if (tree[tree[tree[x].right].right].size>tree[tree[x].left].size){
+            rotate_l(x);
+        }else if (tree[tree[tree[x].right].left].size>tree[tree[x].left].size){
+            rotate_r(tree[x].right);
+            rotate_l(x);
+        }else return ;
+    }
+    maintain(tree[x].left,false);
+    maintain(tree[x].right,true);
+    maintain(x,true);
+    maintain(x,false);
+}
+void insert(int &x,int sp){
+    if (!x){
+        x=++cnt;
+        tree[x].left=tree[x].right=0;
+        tree[x].size=1;
+        tree[x].key=sp;
+    }else{
+        tree[x].size++;
+        if (sp<tree[x].key){
+            insert(tree[x].left,sp);
+        }else{
+            insert(tree[x].right,sp);
+        }
+        maintain(x,sp>=tree[x].key);
+    }
+}
+
+int del(int &x,int sp){
+    tree[x].size--;
+    if (sp==tree[x].key || ( sp<tree[x].key && tree[x].left==0) || (sp>tree[x].key && tree[x].right==0)){
+        int y=tree[x].key;
+        if (tree[x].left==0 ||tree[x].right==0){
+            x=tree[x].left+tree[x].right;
+            }else{
+            tree[x].key=del(tree[x].left,tree[x].key+1);
+        }
+        return y;
+    }else{
+        if (sp<tree[x].key){
+            return del(tree[x].left,sp);
+        }else{
+            return del(tree[x].right,sp);
+        }
+    }
+}
+
+inline int getMax(){
+    int i;
+    for (i=root;tree[i].right;i=tree[i].right);
+    return tree[i].key;
+}
+
+inline int getMin(){
+    int i;
+    for (i=root;tree[i].left;i=tree[i].left);
+    return tree[i].key;
+}
+
+int rank(int &x,int sp){
+    if (sp<tree[x].key){
+        return rank(tree[x].left,sp);
+    }else if (sp>tree[x].key){
+        return rank(tree[x].right,sp)+tree[tree[x].left].size+1;
+    }
+    return tree[tree[x].left].size+1;
+}
+
+int select(int &x,int rak){
+    int rk=tree[tree[x].left].size+1;
+    if (rak<rk){
+        return select(tree[x].left,rak);
+    }else if (rak>rk){
+        return select(tree[x].right,rak-rk);
+    }
+    return tree[x].key;
+}
+
+int pred(int &x,int y,int sp){
+    if (x==0) return y;
+    if (tree[x].key<sp){
+        return pred(tree[x].right,x,sp);
+    }
+    return pred(tree[x].left,y,sp);
+}
+
+int succ(int &x,int y,int sp){
+    if (x==0) return y;
+    if (tree[x].key>sp){
+        return succ(tree[x].left,x,sp);
+    }
+    return succ(tree[x].right,y,sp);
+}
+
+inline void init(){
+    root=cnt=0;
+}
+
+int main(){
+    init();
+    return 0;
+}

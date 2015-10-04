@@ -1,0 +1,83 @@
+//WNJXYK
+//while(true) RP++;
+#include<iostream>
+#include<cstdio>
+#include<algorithm>
+#include<map>
+#include<set>
+#include<queue>
+#include<string>
+#include<cstring>
+using namespace std;
+
+const int Maxn=200005;
+
+string str;
+int s[Maxn];
+int Sa[Maxn],tmpSa[Maxn];
+int cnt[Maxn];
+int rank[Maxn];
+int rank1[Maxn],rank2[Maxn];
+int height[Maxn];
+
+inline void init_Sa(){
+	int len=str.length();
+	int maxSiz=255;
+	for (int i=1;i<=len;i++) s[i]=str[i-1];
+	memset(cnt,0,sizeof(cnt));
+	for (int i=1;i<=len;i++) cnt[s[i]]++;
+	for (int i=1;i<=maxSiz;i++) cnt[i]+=cnt[i-1];
+	for (int i=len;i>=1;i--) Sa[cnt[s[i]]--]=i;
+	rank[Sa[1]]=1;
+	for (int i=2;i<=len;i++){
+		rank[Sa[i]]=rank[Sa[i-1]];
+		if (s[Sa[i]]!=s[Sa[i-1]]) rank[Sa[i]]++;
+	}
+		
+	for (int k=1;k<=len;k=k*2){
+		for (int i=1;i<=len;i++){
+			rank1[i]=rank[i];
+			rank2[i]=(i+k<=len)?rank[i+k]:0;
+		}
+		memset(cnt,0,sizeof(cnt));
+		for (int i=1;i<=len;i++) cnt[rank2[i]]++;
+		for (int i=1;i<=len;i++) cnt[i]+=cnt[i-1];
+		for (int i=len;i>=1;i--){
+			tmpSa[cnt[rank2[i]]--]=i;
+		}
+		memset(cnt,0,sizeof(cnt));
+		for (int i=1;i<=len;i++) cnt[rank1[i]]++;
+		for (int i=1;i<=len;i++) cnt[i]+=cnt[i-1];
+		for (int i=len;i>=1;i--){
+			Sa[cnt[rank1[tmpSa[i]]]--]=tmpSa[i];
+		}
+		
+		rank[Sa[1]]=1;
+		for (int i=2;i<=len;i++){
+			rank[Sa[i]]=rank[Sa[i-1]];
+			if ( !( (rank1[Sa[i]]==rank1[Sa[i-1]]) && (rank2[Sa[i]]==rank2[Sa[i-1]]) ) ) rank[Sa[i]]++;
+		}
+	}
+	
+	for (int i=1;i<=len;i++) rank[Sa[i]]=i;
+	
+	int k=0;
+	for (int i=1;i<=len;i++){
+		if (k) k--;
+		if (rank[i]==1) continue;
+		int l=Sa[rank[i]-1];
+		while(s[i+k]==s[l+k]) k++;
+		height[rank[i]]=k;
+	}
+	
+}
+
+int main(){
+	cin>>str;
+	init_Sa();
+	for (int i=1;i<=str.length();i++) printf("%d ",Sa[i]);
+	printf("\n");
+	for (int i=2;i<=str.length();i++) printf("%d ",height[i]);
+	printf("\n");
+	return 0;
+}

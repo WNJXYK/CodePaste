@@ -1,0 +1,46 @@
+#include<cstdio>
+using namespace std;
+
+int n,m;
+
+int Ans;
+
+char mp[105][105];
+bool vis[105][105];
+
+inline char read(){
+    char x=getchar();
+    while(!(x=='.'||x=='#')) x=getchar();
+    return x;
+}
+
+int dx[]={0,1,0,-1};
+int dy[]={1,0,-1,0};
+
+void floodfill(int x,int y){
+    vis[x][y]=true;
+    for (int k=0;k<4;k++){
+        int tx=x+dx[k],ty=y+dy[k];
+        if (1<=tx && tx<=n && 1<=ty && ty<=m)
+            if (!vis[tx][ty] && mp[tx][ty]=='#')
+                floodfill(tx,ty);
+    }
+}
+
+int main(){
+    scanf("%d%d",&n,&m);
+    for (int i=1;i<=n;i++)
+        for (int j=1;j<=m;j++)
+            mp[i][j]=read();
+    
+    for (int i=1;i<=n;i++)
+        for (int j=1;j<=m;j++)
+            if (mp[i][j]=='#' && !vis[i][j]){
+                Ans++;
+                floodfill(i,j);
+            }
+            
+    printf("%d\n",Ans);
+    
+    return 0;
+}

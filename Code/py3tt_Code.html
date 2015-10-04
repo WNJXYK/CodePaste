@@ -1,0 +1,96 @@
+//WNJXYK
+//while(true) RP++;
+#include<iostream>
+#include<cstdio>
+#include<algorithm>
+#include<map>
+#include<cstring>
+using namespace std;
+
+const int Maxn=10010;
+
+int m,n,k,Ans;
+int flag;
+long long num[Maxn];
+long long minNum,sumNum;
+
+map<long long,int> Hash;
+long long tHash[Maxn*2];
+int tot;
+
+long long sum[Maxn];
+
+int vis[Maxn*2];
+
+long long stTableMin[Maxn][35],preLog2[Maxn];
+void StPrepare(){
+  preLog2[1]=0;
+  for(int i=2;i<=n;i++){
+    preLog2[i]=preLog2[i-1];
+    if((1<<preLog2[i]+1)==i) preLog2[i]++;
+  }
+  for(int i=n;i>=0;--i){
+    stTableMin[i][0]=num[i];
+    for(int j=1;(i+(1<<j)-1)<=n;++j)
+      stTableMin[i][j]=min(stTableMin[i][j-1],stTableMin[i+(1<<j-1)][j-1]);
+  }
+}
+int queryMin(int l,int r){
+  int len=r-l+1,k=preLog2[len];
+  return min(stTableMin[l][k],stTableMin[r-(1<<k)+1][k]);
+}
+
+int main(){
+    printf("Case #1:\n");
+    scanf("%d%d",&n,&m);
+    for (int i=1;i<=n;i++) scanf("%I64d",&num[i]);
+    
+    for (int i=1;i<=n;i++) {tHash[i*2-1]=num[i];tHash[i*2]=num[i]+1;}
+    sort(tHash+1,tHash+n*2+1);
+    tHash[0]=-1;
+    for (int i=1;i<=n*2;i++){
+        if (tHash[i]!=tHash[i-1])Hash[tHash[i]]=++tot;
+    }
+    
+    for (int i=1;i<=n;i++) num[i]=Hash[num[i]];
+    
+    sum[0]=0;
+    for (int i=1;i<=n;i++) sum[i]+=sum[i-1]+num[i];
+    StPrepare();
+    
+    for (int i=1;i<=m;i++){
+        scanf("%d",&k);
+        Ans=0;flag=0;
+        memset(vis,0,sizeof(vis));
+        for (int j=1;j<=k;j++){
+            vis[num[j]]++;
+            if (vis[num[j]]==2) flag++;
+        }
+        if (!flag){
+            minNum=queryMin(1,k);
+            sumNum=sum[k]-sum[0];
+            if (sumNum==(long long)(minNum+minNum+k-1)*(long long)k/(long long)2) Ans++;
+            //printf("True\n");
+        }
+        
+        for (int left=2;left<=n;left++){
+            
+            int right=left+k-1;
+            if (right>n) break;
+            
+            vis[num[left-1]]--;
+            if (vis[num[left-1]]==1) flag--;
+            vis[num[right]]++;
+            if (vis[num[right]]==2) flag++;
+            
+            if (!flag){
+                minNum=queryMin(left,right);
+                sumNum=sum[right]-sum[left-1];
+                if (sumNum==(long long)(minNum+minNum+k-1)*(long long)k/(long long)2) Ans++;
+            }
+        }
+        printf("%d\n",Ans);
+    }
+    
+    return 0;
+}

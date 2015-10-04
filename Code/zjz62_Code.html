@@ -1,0 +1,15 @@
+#include<cstdio>
+using namespace std;
+
+const int Maxn=50000;
+
+int miu[Maxn+5];
+
+inline void getMiu(){
+	for (int i=1;i<=Maxn;i++){
+		int target=(i==1?1:0);
+		int delta=target-miu[i];
+		miu[i]=delta;
+		for (int j=i+i;j<=Maxn;j+=i)miu[j]+=delta;
+	}
+}

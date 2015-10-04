@@ -1,0 +1,53 @@
+//WNJXYK
+//while(true) RP++;
+#include<iostream>
+#include<cstdio>
+#include<algorithm>
+#include<map>
+#include<set>
+#include<queue>
+#include<string>
+#include<cstring>
+using namespace std;
+
+int k;
+
+int main(){
+	//freopen(".in","r",stdin);
+	//freopen(".out","w",stdout);
+	scanf("%d",&k);
+	if (!(k&1)){
+		printf("NO\n");
+	}else{
+		printf("YES\n");
+		int lN=2*k-1;
+		int n=lN*2,m=n*k/2;
+		printf("%d %d\n",n,m);
+		//LP
+		for (int i=2;i<=k;i++)
+			printf("%d %d\n",1,i);
+		for (int i=2;i<=k;i++){
+			for (int j=1;j<=k-1;j++){
+				printf("%d %d\n",i,k+j);
+			}
+		}
+		for (int j=1;j<=k-1;j+=2){
+			printf("%d %d\n",k+j,k+j+1);
+		}
+		//RP
+		for (int i=2;i<=k;i++)
+			printf("%d %d\n",lN+1,lN+i);
+		for (int i=2;i<=k;i++){
+			for (int j=1;j<=k-1;j++){
+				printf("%d %d\n",lN+i,lN+k+j);
+			}
+		}
+		for (int j=1;j<=k-1;j+=2){
+			printf("%d %d\n",lN+k+j,lN+k+j+1);
+		}
+		//Birdge
+		printf("%d %d\n",1,lN+1);
+	}
+	
+	return 0;
+}

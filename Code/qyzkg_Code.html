@@ -1,0 +1,215 @@
+#include<cstdio>
+#include<cstring>
+#include<cstdlib>
+#include<cmath>
+#include<iostream>
+const double PI=3.14159265358979;
+const double EPS=1e-10;
+using namespace std;
+
+inline double min(double a,double b)
+{
+    return a<b?a:b;
+}
+
+inline double max(double a,double b)
+{
+    return a>b?a:b;
+}
+
+int dcmp(double x)
+{
+    if(fabs(x)<=EPS)return 0;
+    return x<0?-1:1;
+}
+
+class vector//向量 
+{
+    public:
+        double x,y;
+        //构造函数 
+        vector():x(0.0),y(0.0){}
+        vector(double px,double py):x(px),y(py){}
+        vector(double x1,double y1,double x2,double y2):x(x2-x1),y(y2-y1){}
+        //向量运算 
+        vector operator+(const vector& p)
+        {
+            return vector(x+p.x,y+p.y);
+        }
+        vector operator-(const vector& p)
+        {
+            return vector(x-p.x,y-p.y);
+        }
+        vector operator-()
+        {
+            return vector(-x,-y);
+        }
+        double operator*(const vector& p)//点积 
+        {
+            return x*p.x+y*p.y;
+        }
+        vector operator*(const double p)//数量积 
+        {
+            return vector(x*p,y*p);
+        }
+        double operator^(const vector& p)//叉积 
+        {
+            return x*p.y-y*p.x;
+        }
+        vector& operator+=(const vector& p)
+        {
+            x+=p.x;
+            y+=p.y;
+            return *this;
+        }
+        vector& operator-=(const vector& p)
+        {
+            x-=p.x;
+            y-=p.y;
+            return *this;
+        }
+        vector& operator*=(const double p)//数量积 
+        {
+            x*=p;
+            y*=p;
+            return *this;
+        }
+        bool operator==(const vector &p)const
+        {
+            return !dcmp(x-p.x)&&!dcmp(y-p.y);
+        }
+
+        double length()//向量模 
+        {
+            return sqrt(x*x+y*y);
+        }
+
+        friend ostream& operator<<(ostream& out,vector& p)
+        {
+            out<<"("<<p.x<<","<<p.y<<")";
+            return out;
+        }
+};
+typedef vector point;
+
+int cmp(const void *a,const void *b)
+{
+    point i=*(point*)a,j=*(point*)b;
+    if(dcmp(i.x-j.x))return dcmp(i.x-j.x);
+    return dcmp(i.y-j.y);
+}
+
+double angle(vector p1,vector p2)//两个向量夹角 
+{
+    if(p1.length()==0||p2.length()==0)
+    return 0;
+    return acos((p1*p2)/(p1.length()*p2.length()));
+}
+
+double angle2(vector p)//计算向量极角
+{
+    return atan2(p.y,p.x);
+}
+
+vector rotate(vector p,double rad)//逆时针旋转向量 
+{
+    return vector(p.x*cos(rad)-p.y*sin(rad),p.x*sin(rad)+p.y*cos(rad));
+}
+
+vector normal(vector p)//计算法向量
+{
+    if(!p.x&&!p.y)return p;
+    return vector(-p.y/p.length(),p.x/p.length());
+}
+
+point getlineintersection(point p,vector v,point q,vector w)//计算直线交点
+{
+    if(!(v^w))return vector(0,0);
+    vector u=p-q;
+    double t=(w^u)/(v^w);
+    return p+v*t; 
+}
+
+double distancetoline(point p,point a,point b)//计算点到直线的距离
+{
+    vector v1=b-a,v2=p-a;
+    return fabs(v1^v2)/v1.length();
+}
+
+double distancetosegment(point p,point a,point b)//计算点到线段的距离
+{
+    if(a==b)return (p-a).length();
+    vector v1=b-a,v2=p-a,v3=p-b;
+    if(dcmp(v1*v2)<0)return v2.length();
+    if(dcmp(v1*v3)>0)return v3.length();
+    return fabs(v1^v2)/v1.length();
+}
+
+bool segacross(point p1,point p2,point q1,point q2)//判断线段p和q是否相交 
+{
+    if(dcmp((p1-q1)^(q2-q1))*dcmp((q1-p2)^(q2-q1))>0&&
+       dcmp((q1-p1)^(p2-p1))*dcmp((p1-q2)^(p2-p1))>0)
+    return true;
+    return false;
+}
+
+bool onsegment(point p,point a,point b)//判断点是否在线段ab上
+{
+    return dcmp((a-p)*(b-p))<=0&&!dcmp((a-p)^(b-p));
+}
+
+int ispointinpolygon(point p,point *poly,int cnt)//判断点与多边形位置关系，顶点按逆时针序 
+{
+    int wn=0;
+    for(int i=0;i<cnt;i++)
+    {
+        if(onsegment(p,poly[i],poly[(i+1)%cnt]))return -1;//边界;
+        int k=dcmp((poly[(i+1)%cnt]-poly[i])^(p-poly[i]));
+        int d1=dcmp(poly[i].y-p.y);
+        int d2=dcmp(poly[(i+1)%cnt].y-p.y);
+        if(k>0&&d1<=0&&d2>0)wn++;
+        if(k<0&&d2<=0&&d1>0)wn--;
+    }
+    if(wn)return 1;//内部 
+    return 0;//外部 
+}
+
+double polygonarea(point *p,int cnt)//计算多边形有向面积，顶点按逆时针序 
+{
+    double area=0;
+    if(cnt<3)return 0;
+    for(int i=1;i<cnt-1;i++)
+    area+=(p[i]-p[0])^(p[i+1]-p[0]);
+    return area/2;
+}
+
+int convexhull(point *p,int cnt,point *ch/*返回凸包顶点*/)//计算凸包，输入数组将被打乱，返回顶点个数 
+{
+    qsort(p,cnt,sizeof(point),cmp);
+    int m=0;
+    for(int i=0;i<cnt;i++)
+    {
+        while(m>1&&((ch[m-1]-ch[m-2])^(p[i]-ch[m-2]))<=0)m--;
+        ch[m++]=p[i];
+    }
+    int k=m;
+    for(int i=cnt-2;i>=0;i--)
+    {
+        while(m>k&&((ch[m-1]-ch[m-2])^(p[i]-ch[m-2]))<=0)m--;
+        ch[m++]=p[i];
+    }
+    if(cnt>1)m--;
+    return m;
+}
+
+int main()
+{
+    point a(1,1),b(3,0.5),c(2,1.5),d(3,1.5),e(5,1.5),f(1,2),g(3,2),h(3,3);
+    point plg[]={a,b,c,d,e,f,g,h};
+    point ch[10];
+    cout<<convexhull(plg,8,ch)<<endl;
+    for(int i=0;i<5;i++)
+    cout<<ch[i]<<endl;
+    //cout<<angle(p,b)<<endl;
+    return 0;
+}

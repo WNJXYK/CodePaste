@@ -1,0 +1,65 @@
+#include<cstdio>
+using namespace std;
+
+int n,m;
+
+const int Maxn=100005;
+const int Maxm=30;
+
+struct Door{
+	int ope;
+	int val;
+}door[Maxn];
+int top=0;
+
+char ord[20];
+int val;
+
+inline int getOpe(char x){
+	if (x=='A') return 1;
+	if (x=='X') return 2;
+	if (x=='O') return 3;
+}
+
+inline int calcOpe(int ope,int x1,int x2){
+	if (ope==1) return x1&x2;
+	if (ope==2) return x1^x2;
+	if (ope==3) return x1|x2;
+}
+
+int main(){
+	freopen("sleep1.in","r",stdin);
+	freopen("sleep.out","w",stdout);
+	scanf("%d%d",&n,&m);
+	for (int i=1;i<=n;i++){
+		scanf("%s%d",&ord,&val);
+		if (!top){
+			door[++top].ope=getOpe(ord[0]);
+			door[top].val=val;
+		}else if (door[top].ope==getOpe(ord[0])){
+			door[top].val=calcOpe(getOpe(ord[0]),door[top].val,val);
+		}else{
+			door[++top].ope=getOpe(ord[0]);
+			door[top].val=val;
+		}
+	}
+	
+	int Ans=0;
+	int src=0;
+	int ret=0;
+	for (int i=1;i<=top;i++) Ans=calcOpe(door[i].ope,Ans,door[i].val);
+	for (int i=Maxm;i>=0;i--){
+		if (Ans&(1<<i)) continue;
+		if (src+(1<<i)>m) continue;
+		ret=(1<<i);
+		for (int i=1;i<=top;i++) ret=calcOpe(door[i].ope,ret,door[i].val); 
+		if ((ret&(1<<i))){
+			Ans+=(1<<i);
+			ret+=(1<<i);
+		}
+	}
+	
+	printf("%d\n",Ans);
+	
+	return 0;
+}

@@ -1,0 +1,121 @@
+#include <iostream>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <algorithm>
+
+using namespace std;
+
+const int MaxN = 10000 + 5, MN = 1000000000 + 15, MaxNode = 10000 * 30 * 15 + 15;
+
+int n, m, Index, Used_Index;
+int A[MaxN], Root[MaxN * 4], T[MaxNode], Son[MaxNode][2], U[MaxN * 4], C[MaxN * 4];
+
+void Add(int &x, int s, int t, int Pos, int Num) 
+{
+	if (x == 0) x = ++Index;
+	T[x] += Num;
+	if (s == t) return;
+	int m = (s + t) >> 1;
+	if (Pos <= m) Add(Son[x][0], s, m, Pos, Num);
+	else Add(Son[x][1], m + 1, t, Pos, Num); 
+}
+
+void Change(int x, int s, int t, int Pos, int Pos_2, int Num) 
+{
+	Add(Root[x], 0, MN, Pos_2, Num);
+	if (s == t) return;
+	int m = (s + t) >> 1;
+	if (Pos <= m) Change(x << 1, s, m, Pos, Pos_2, Num);
+	else Change(x << 1 | 1, m + 1, t, Pos, Pos_2, Num);
+}
+
+void Init_U(int x, int s, int t, int Pos) 
+{
+	if (Pos >= t) 
+	{
+		U[x] = Root[x]; 
+		return;
+	}
+	int m = (s + t) >> 1;
+	Init_U(x << 1, s, m, Pos);
+	if (Pos >= m + 1) Init_U(x << 1 | 1, m + 1, t, Pos);
+}
+
+void Turn(int x, int s, int t, int Pos, int f) 
+{
+	if (Pos >= t) 
+	{
+		if (C[x] == Used_Index) return;
+		C[x] = Used_Index;
+		U[x] = Son[U[x]][f];
+		return;
+	}
+	int m = (s + t) >> 1;
+	Turn(x << 1, s, m, Pos, f);
+	if (Pos >= m + 1) Turn(x << 1 | 1, m + 1, t, Pos, f);
+}
+
+int Get_Sum(int x, int s, int t, int Pos) 
+{
+	if (Pos >= t) return T[Son[U[x]][0]];
+	int ret = 0, m = (s + t) >> 1;
+	ret += Get_Sum(x << 1, s, m, Pos);
+	if (Pos >= m + 1) ret += Get_Sum(x << 1 | 1, m + 1, t, Pos);
+	return ret; 
+}
+
+int main()  
+{
+	scanf("%d%d", &n, &m);
+	for (int i = 1; i <= n; ++i) 
+	{
+		scanf("%d", &A[i]);
+		Change(1, 0, n, i, A[i], 1);
+	}
+	char f;
+	int L, R, Pos, Num, k;
+	for (int i = 1; i <= m; ++i) 
+	{
+		f = '-';
+		while (f < 'A' || f > 'Z') f = getchar();
+		if (f == 'C') 
+		{
+			scanf("%d%d", &Pos, &Num);
+			Change(1, 0, n, Pos, A[Pos], -1);
+			A[Pos] = Num;
+			Change(1, 0, n, Pos, Num, 1);
+		}	
+		else 
+		{
+			scanf("%d%d%d", &L, &R, &k);
+			int l, r, mid, Temp;
+			Used_Index = 0;
+			Init_U(1, 0, n, L - 1);
+			Init_U(1, 0, n, R);
+			l = 0; r = MN;
+			while (l < r) 
+			{
+				++Used_Index;
+				mid = (l + r) >> 1;
+				Temp = Get_Sum(1, 0, n, R) - Get_Sum(1, 0, n, L - 1);
+				if (Temp >= k) 
+				{
+					r = mid;
+					Turn(1, 0, n, R, 0);
+					Turn(1, 0, n, L - 1, 0);
+				}
+				else 
+				{
+					l = mid + 1;
+					Turn(1, 0, n, R, 1);
+					Turn(1, 0, n, L - 1, 1);
+					k -= Temp;
+				}
+			}
+			printf("%d\n", l);
+		}
+	}
+	return 0;
+}
